@@ -184,6 +184,7 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      </ClientOnly>
     </div>
   );
 }
