@@ -80,11 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AI-Powered Insurance Pricing & Lead Intelligence" },
-      { name: "description", content: "Enterprise demo for AI-driven P&C insurance pricing and lead prioritization." },
+      { name: "description", content: "Enterprise platform for AI-driven P&C insurance pricing and lead prioritization." },
       { property: "og:title", content: "AI-Powered Insurance Pricing & Lead Intelligence" },
       { name: "twitter:title", content: "AI-Powered Insurance Pricing & Lead Intelligence" },
-      { property: "og:description", content: "Enterprise demo for AI-driven P&C insurance pricing and lead prioritization." },
-      { name: "twitter:description", content: "Enterprise demo for AI-driven P&C insurance pricing and lead prioritization." },
+      { property: "og:description", content: "Enterprise platform for AI-driven P&C insurance pricing and lead prioritization." },
+      { name: "twitter:description", content: "Enterprise platform for AI-driven P&C insurance pricing and lead prioritization." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c1ddd68-cfd2-45e0-acd4-6efbddebbe2c/id-preview-1e85923d--7f7283f3-7d9b-43a4-8b1d-fc350db42e01.lovable.app-1780298251228.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c1ddd68-cfd2-45e0-acd4-6efbddebbe2c/id-preview-1e85923d--7f7283f3-7d9b-43a4-8b1d-fc350db42e01.lovable.app-1780298251228.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -125,7 +125,7 @@ function RootComponent() {
               <SidebarTrigger />
               <div className="flex flex-col leading-tight">
                 <span className="text-sm font-semibold">AI-Powered Insurance Pricing & Lead Intelligence</span>
-                <span className="text-xs text-muted-foreground">General Insurance · P&C · Demo</span>
+                <span className="text-xs text-muted-foreground">General Insurance · P&C Platform</span>
               </div>
             </header>
             <main className="flex-1 p-6">

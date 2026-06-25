@@ -20,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LEADS, formatINR, type Lead } from "@/lib/mockData";
+import { formatINR, type Lead } from "@/lib/mockData";
+import { useLeads } from "@/lib/leadsStore";
 
 export const Route = createFileRoute("/leads")({
   head: () => ({
@@ -51,6 +52,7 @@ function riskBadge(r: Lead["riskLevel"]) {
 
 function LeadsPage() {
   const navigate = useNavigate();
+  const LEADS = useLeads();
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<string>("all");
   const [insurance, setInsurance] = useState<string>("all");
@@ -73,7 +75,7 @@ function LeadsPage() {
       return 0;
     });
     return rows;
-  }, [query, priority, insurance, sortKey, sortDir]);
+  }, [LEADS, query, priority, insurance, sortKey, sortDir]);
 
   const toggleSort = (k: keyof Lead) => {
     if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");

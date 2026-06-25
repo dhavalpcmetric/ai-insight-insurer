@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowRouteImport } from './routes/workflow'
+import { Route as UploadRouteImport } from './routes/upload'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as LeadDetailsRouteImport } from './routes/lead-details'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WorkflowRoute = WorkflowRouteImport.update({
   id: '/workflow',
   path: '/workflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -35,6 +42,11 @@ const LeadDetailsRoute = LeadDetailsRouteImport.update({
   path: '/lead-details',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,39 +55,69 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/settings': typeof SettingsRoute
+  '/upload': typeof UploadRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/settings': typeof SettingsRoute
+  '/upload': typeof UploadRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/integrations': typeof IntegrationsRoute
   '/lead-details': typeof LeadDetailsRoute
   '/leads': typeof LeadsRoute
   '/settings': typeof SettingsRoute
+  '/upload': typeof UploadRoute
   '/workflow': typeof WorkflowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lead-details' | '/leads' | '/settings' | '/workflow'
+  fullPaths:
+    | '/'
+    | '/integrations'
+    | '/lead-details'
+    | '/leads'
+    | '/settings'
+    | '/upload'
+    | '/workflow'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lead-details' | '/leads' | '/settings' | '/workflow'
-  id: '__root__' | '/' | '/lead-details' | '/leads' | '/settings' | '/workflow'
+  to:
+    | '/'
+    | '/integrations'
+    | '/lead-details'
+    | '/leads'
+    | '/settings'
+    | '/upload'
+    | '/workflow'
+  id:
+    | '__root__'
+    | '/'
+    | '/integrations'
+    | '/lead-details'
+    | '/leads'
+    | '/settings'
+    | '/upload'
+    | '/workflow'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   LeadDetailsRoute: typeof LeadDetailsRoute
   LeadsRoute: typeof LeadsRoute
   SettingsRoute: typeof SettingsRoute
+  UploadRoute: typeof UploadRoute
   WorkflowRoute: typeof WorkflowRoute
 }
 
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/workflow'
       fullPath: '/workflow'
       preLoaderRoute: typeof WorkflowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -109,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeadDetailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,9 +177,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  IntegrationsRoute: IntegrationsRoute,
   LeadDetailsRoute: LeadDetailsRoute,
   LeadsRoute: LeadsRoute,
   SettingsRoute: SettingsRoute,
+  UploadRoute: UploadRoute,
   WorkflowRoute: WorkflowRoute,
 }
 export const routeTree = rootRouteImport

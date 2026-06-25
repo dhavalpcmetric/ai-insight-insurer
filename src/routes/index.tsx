@@ -1,5 +1,5 @@
 import { createFileRoute, ClientOnly } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -17,7 +17,8 @@ import { TrendingUp, Users, Target, IndianRupee, Sparkles } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LEADS, formatINR } from "@/lib/mockData";
+import { formatINR } from "@/lib/mockData";
+import { useLeads } from "@/lib/leadsStore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,8 +61,15 @@ function KpiCard({ label, value, icon: Icon, hint }: { label: string; value: str
 }
 
 function Dashboard() {
+  const LEADS = useLeads();
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const i = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(i);
+  }, []);
+
   const stats = useMemo(() => {
-    const total = LEADS.length;
+    const total = LEADS.length || 1;
     const high = LEADS.filter((l) => l.priority === "High").length;
     const medium = LEADS.filter((l) => l.priority === "Medium").length;
     const low = LEADS.filter((l) => l.priority === "Low").length;
@@ -77,10 +85,9 @@ function Dashboard() {
       name: r,
       value: LEADS.filter((l) => l.riskLevel === r).length,
     }));
-    const sources = ["Website", "Mobile App", "Call Center", "Agent", "Broker"].map((s) => ({
-      name: s,
-      leads: LEADS.filter((l) => l.leadSource === s).length,
-    }));
+    const sources = ["Website", "Mobile App", "Call Center", "Agent", "Broker", "Excel Upload", "CRM Sync"]
+      .map((s) => ({ name: s, leads: LEADS.filter((l) => l.leadSource === s).length }))
+      .filter((s) => s.leads > 0);
     const monthMap: Record<string, number> = {};
     LEADS.forEach((l) => {
       const m = l.leadDate.slice(0, 7);
@@ -90,8 +97,8 @@ function Dashboard() {
       .sort()
       .map(([m, v]) => ({ month: m, revenue: Math.round(v) }));
 
-    return { total, high, avgConv, revenue, priorityData, riskData, sources, forecast };
-  }, []);
+    return { total: LEADS.length, high, avgConv, revenue, priorityData, riskData, sources, forecast };
+  }, [LEADS]);
 
   return (
     <div className="space-y-6">
@@ -109,7 +116,16 @@ function Dashboard() {
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className="w-fit">Demo · P&C · Motor</Badge>
+          <div className="flex flex-col items-end gap-1.5">
+            <Badge variant="secondary" className="w-fit gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+              </span>
+              Live · General Insurance · P&C
+            </Badge>
+            <span className="text-[11px] opacity-80">Updated {now.toLocaleTimeString()}</span>
+          </div>
         </CardContent>
       </Card>
 

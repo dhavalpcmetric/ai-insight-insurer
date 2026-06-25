@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { LEADS, formatINR } from "@/lib/mockData";
+import { formatINR } from "@/lib/mockData";
+import { useLeads } from "@/lib/leadsStore";
 
 const searchSchema = z.object({ id: z.string().optional() });
 
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/lead-details")({
 
 function LeadDetails() {
   const { id } = Route.useSearch();
-  const lead = useMemo(() => LEADS.find((l) => l.leadId === id) ?? LEADS[0], [id]);
+  const LEADS = useLeads();
+  const lead = useMemo(() => LEADS.find((l) => l.leadId === id) ?? LEADS[0], [id, LEADS]);
 
   const priorityColor = lead.priority === "High" ? "text-green-600" : lead.priority === "Medium" ? "text-amber-600" : "text-red-600";
   const riskColor = lead.riskLevel === "Low Risk" ? "text-green-600" : lead.riskLevel === "Medium Risk" ? "text-amber-600" : "text-red-600";
