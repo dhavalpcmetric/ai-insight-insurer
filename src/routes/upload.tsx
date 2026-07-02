@@ -6,6 +6,8 @@ import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Download, Trash2 } 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { leadFromRow, type Lead } from "@/lib/mockData";
 import { leadsStore, useLeads } from "@/lib/leadsStore";
 
@@ -19,31 +21,82 @@ export const Route = createFileRoute("/upload")({
   component: UploadPage,
 });
 
+// Configure the backend endpoint via env; falls back to same-origin /api/leads/upload
+const UPLOAD_ENDPOINT =
+  (import.meta as any).env?.VITE_LEADS_UPLOAD_URL ?? "/api/leads/upload";
+
 function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
   const [message, setMessage] = useState<string>("");
   const [preview, setPreview] = useState<Lead[]>([]);
+  const [useApi, setUseApi] = useState<boolean>(true);
   const leads = useLeads();
   const uploadedCount = leads.filter((l) => l.leadSource === "Excel Upload" || l.leadSource === "CRM Sync").length;
 
+  // Normalise whatever the API returns into Lead[]
+  function normalizeApiLeads(payload: any): Lead[] {
+    const rows: any[] = Array.isArray(payload)
+      ? payload
+      : payload?.leads ?? payload?.data ?? payload?.results ?? [];
+    if (!Array.isArray(rows)) return [];
+    return rows.map((r, i) => {
+      // If API already returns a fully-scored Lead, trust it; otherwise score locally
+      if (r && typeof r.leadScore === "number" && r.priority && r.suggestedPremium != null) {
+        return r as Lead;
+      }
+      return leadFromRow(r ?? {}, i);
+    });
+  }
+
+  async function uploadViaApi(file: File): Promise<Lead[]> {
+    const form = new FormData();
+    form.append("file", file, file.name);
+    const res = await fetch(UPLOAD_ENDPOINT, { method: "POST", body: form });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Upload failed (${res.status}) ${text.slice(0, 200)}`);
+    }
+    const ct = res.headers.get("content-type") ?? "";
+    const payload = ct.includes("application/json") ? await res.json() : await res.text();
+    return normalizeApiLeads(payload);
+  }
+
+  async function parseLocally(file: File): Promise<Lead[]> {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    if (!rows.length) throw new Error("No rows found in the file.");
+    return rows.map((r, i) => leadFromRow(r, i));
+  }
+
   async function handleFile(file: File) {
     setStatus("processing");
-    setMessage(`Reading ${file.name}…`);
+    setMessage(useApi ? `Uploading ${file.name} to ${UPLOAD_ENDPOINT}…` : `Reading ${file.name}…`);
     try {
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-      if (!rows.length) throw new Error("No rows found in the file.");
-      const newLeads = rows.map((r, i) => leadFromRow(r, i));
+      const newLeads = useApi ? await uploadViaApi(file) : await parseLocally(file);
+      if (!newLeads.length) throw new Error("No leads returned.");
       leadsStore.add(newLeads);
       setPreview(newLeads.slice(0, 5));
       setStatus("success");
-      setMessage(`Successfully scored ${newLeads.length} leads from ${file.name}.`);
+      setMessage(`Successfully imported ${newLeads.length} leads from ${file.name}.`);
     } catch (e: any) {
+      // Auto-fallback to local parsing if the API is unreachable
+      if (useApi) {
+        try {
+          const fallback = await parseLocally(file);
+          leadsStore.add(fallback);
+          setPreview(fallback.slice(0, 5));
+          setStatus("success");
+          setMessage(`API unavailable — parsed ${fallback.length} leads locally. (${e?.message ?? "network error"})`);
+          return;
+        } catch {
+          /* fallthrough to error */
+        }
+      }
       setStatus("error");
-      setMessage(e?.message ?? "Failed to parse file.");
+      setMessage(e?.message ?? "Failed to process file.");
     }
   }
 
@@ -72,6 +125,14 @@ function UploadPage() {
           <CardTitle className="flex items-center gap-2"><Upload className="h-5 w-5" />Upload File</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 flex items-center justify-between rounded-md border bg-muted/30 p-3">
+            <div>
+              <Label htmlFor="use-api" className="font-medium">Send to backend API</Label>
+              <p className="text-xs text-muted-foreground font-mono">POST {UPLOAD_ENDPOINT}</p>
+            </div>
+            <Switch id="use-api" checked={useApi} onCheckedChange={setUseApi} />
+          </div>
+
           <div
             onClick={() => inputRef.current?.click()}
             onDragOver={(e) => e.preventDefault()}
