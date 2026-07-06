@@ -21,9 +21,10 @@ export const Route = createFileRoute("/upload")({
   component: UploadPage,
 });
 
-// Configure the backend endpoint via env; falls back to same-origin /api/leads/upload
+// Configure the backend endpoint via env (e.g. https://<your-tunnel>/upload-leads).
+// Fallback path assumes same-origin proxy.
 const UPLOAD_ENDPOINT =
-  (import.meta as any).env?.VITE_LEADS_UPLOAD_URL ?? "/api/leads/upload";
+  (import.meta as any).env?.VITE_LEADS_UPLOAD_URL ?? "/upload-leads";
 
 function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
